@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+<title>Guglu's Birthday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: one black stage. Gift box on a full-height hero, a full-height sky of endless balloons, then a closing wish where every letter reacts to hover. */
+:root {
+  --bg: #07060b;
+  --surface: #17141f;
+  --fg: #f6f1ea;
+  --muted: #9a93a6;
+  --pink: #ff5c8a;
+  --gold: #ffc94d;
+  --mint: #5ce1c0;
+  --sky: #6aa8ff;
+  --violet: #b38cff;
+  --orange: #ff8a4c;
+  --display: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html.locked, html.locked body { overflow: hidden; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.5 var(--body);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; border-radius: 8px; }
+
+.pad {
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+
+.sound {
+  position: fixed;
+  z-index: 40;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(23,20,31,.7);
+  backdrop-filter: blur(6px);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: .78rem;
+  letter-spacing: .04em;
+  color: var(--muted);
+  cursor: pointer;
+}
+.sound[aria-pressed="true"] { color: var(--fg); }
+
+/* ---------- Hero with the surprise box ---------- */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  height: 100svh;
+  min-height: max(100svh, 640px);
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(55% 40% at 50% 56%, rgba(127,98,255,.22), transparent 70%),
+    radial-gradient(40% 30% at 18% 14%, rgba(179,140,255,.14), transparent 70%),
+    radial-gradient(35% 28% at 88% 80%, rgba(92,225,192,.08), transparent 70%);
+}
+.top {
+  position: absolute;
+  top: 13%;
+  left: 0; right: 0;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+.top > * { grid-area: 1 / 1; }
+.eyebrow {
+  align-self: start;
+  font-weight: 700;
+  font-size: .8rem;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: opacity .4s;
+}
+.greet {
+  margin: 0;
+  font: 400 clamp(2.5rem, 12.5vw, 6rem)/1.02 var(--display);
+  text-wrap: balance;
+}
+.greet span { display: block; }
+.greet .nm {
+  background: linear-gradient(90deg, var(--pink), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: .08em;
+}
+.greet:not([hidden]) { animation: pop .9s cubic-bezier(.2,1.5,.35,1) both; }
+@keyframes pop { from { opacity: 0; transform: scale(.4) translateY(30px); } to { opacity: 1; transform: none; } }
+.opened .eyebrow { opacity: 0; }
+
+.gift {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  margin-top: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  animation: wobble 2.8s ease-in-out infinite;
+}
+.gift:disabled { cursor: default; animation: none; }
+.gift .base {
+  position: absolute;
+  left: 8px; right: 8px; top: 52px; bottom: 0;
+  background: linear-gradient(180deg, #7f62ff, #4a33c8);
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 34px 70px -22px rgba(127,98,255,.7);
+}
+.gift .base::after, .gift .lid::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 30px; margin-left: -15px;
+  background: linear-gradient(90deg, #ff5c8a, #ffa3bf 50%, #ff5c8a);
+}
+.gift .lid {
+  position: absolute;
+  left: 0; right: 0; top: 14px;
+  height: 44px;
+  background: linear-gradient(180deg, #a68cff, #6b4bf0);
+  border-radius: 12px;
+  z-index: 2;
+  transition: transform .9s cubic-bezier(.3,.7,.2,1), opacity .7s .15s;
+}
+.bow { position: absolute; left: 50%; top: -30px; width: 0; height: 0; z-index: 1; }
+.bow i {
+  position: absolute; top: 0;
+  width: 44px; height: 34px;
+  border: 7px solid #ff7aa2;
+  border-radius: 50% 50% 50% 8px;
+}
+.bow i:first-child { left: -46px; transform: rotate(-10deg); }
+.bow i:last-child { left: 2px; transform: scaleX(-1) rotate(-10deg); }
+.bow::after {
+  content: ""; position: absolute; left: -9px; top: 16px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #ffc94d;
+}
+.gift .glow {
+  position: absolute;
+  left: -50px; right: -50px; top: -30px;
+  height: 220px;
+  background: radial-gradient(closest-side, rgba(255,214,120,.9), rgba(255,214,120,0));
+  filter: blur(8px);
+  opacity: 0;
+  transition: opacity .6s .2s;
+  pointer-events: none;
+}
+.gift.open .glow { opacity: 1; }
+.gift.open .lid { transform: translate(40px, -260px) rotate(28deg); opacity: 0; }
+.gift.shake { animation: shake .48s linear; }
+@keyframes wobble {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-8px) rotate(-5deg); }
+  40% { transform: translateX(8px) rotate(5deg); }
+  60% { transform: translateX(-6px) rotate(-4deg); }
+  80% { transform: translateX(6px) rotate(4deg); }
+}
+
+.hint {
+  position: absolute;
+  bottom: 10%;
+  left: 0; right: 0;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: .95rem;
+  letter-spacing: .04em;
+  cursor: default;
+}
+.hint .arrow { display: none; width: 22px; height: 22px; border-right: 3px solid var(--gold); border-bottom: 3px solid var(--gold); transform: rotate(45deg); animation: nudge 1.4s ease-in-out infinite; }
+.opened .hint { color: var(--fg); cursor: pointer; }
+.opened .hint .arrow { display: block; }
+@keyframes nudge { 0%, 100% { transform: translateY(0) rotate(45deg); } 50% { transform: translateY(8px) rotate(45deg); } }
+
+/* ---------- Balloon sky ---------- */
+.sky {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--bg) 0%, #100c1d 45%, #0c0916 80%, var(--bg) 100%);
+}
+.sky-head {
+  position: relative;
+  z-index: 3;
+  padding-block: 56px 0;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+  pointer-events: none;
+}
+.sky-head h2 { margin: 0; font: 400 clamp(1.9rem, 7vw, 3.2rem)/1.1 var(--display); text-wrap: balance; }
+.sky-head p { margin: 0; color: var(--muted); max-width: 32ch; }
+.count {
+  margin-top: 6px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.layer { position: absolute; inset: 0; z-index: 2; }
+
+.balloon {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: var(--w);
+  height: calc(var(--w) * 1.22);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  animation: rise var(--d) linear forwards;
+  will-change: transform;
+}
+@keyframes rise {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, calc(var(--rise) * -1), 0); }
+}
+.balloon .b {
+  position: absolute;
+  inset: 0;
+  border-radius: 50% 50% 48% 48% / 46% 46% 54% 54%;
+  background:
+    radial-gradient(ellipse 14% 20% at 30% 26%, rgba(255,255,255,.65), rgba(255,255,255,0) 100%),
+    radial-gradient(circle at 36% 32%, color-mix(in srgb, var(--c) 65%, #fff), var(--c) 52%, color-mix(in srgb, var(--c) 70%, #000));
+  box-shadow: 0 0 40px -6px color-mix(in srgb, var(--c) 55%, transparent);
+  transform-origin: 50% 125%;
+  animation: sway var(--s) ease-in-out infinite alternate;
+}
+.balloon .b::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 99%;
+  width: 12px; height: 11px; margin-left: -6px;
+  background: color-mix(in srgb, var(--c) 78%, #000);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.balloon .b::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: calc(100% + 10px);
+  width: 1px; height: 64px;
+  background: rgba(255,255,255,.35);
+}
+.balloon:hover .b { filter: brightness(1.15); }
+@keyframes sway { from { transform: rotate(-6deg) translateX(-6px); } to { transform: rotate(6deg) translateX(6px); } }
+
+.ring {
+  position: absolute;
+  width: 20px; height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 3px solid var(--c);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: ring .5s ease-out forwards;
+}
+@keyframes ring { to { transform: scale(5); opacity: 0; } }
+
+.msg {
+  position: absolute;
+  z-index: 4;
+  width: max-content;
+  max-width: min(240px, 78vw);
+  padding: 10px 16px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1.5px solid var(--c);
+  box-shadow: 0 10px 30px -8px color-mix(in srgb, var(--c) 60%, transparent);
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.35;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: msg 3.2s ease-out forwards;
+}
+@keyframes msg {
+  0% { opacity: 0; transform: translate(-50%, -30%) scale(.5); }
+  12% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+  20% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -140%) scale(1); }
+}
+
+/* ---------- Closing wish ---------- */
+.wish {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(50% 35% at 50% 40%, rgba(179,140,255,.16), transparent 70%),
+    radial-gradient(40% 30% at 85% 90%, rgba(255,92,138,.14), transparent 70%),
+    radial-gradient(40% 30% at 10% 85%, rgba(106,168,255,.10), transparent 70%);
+}
+.wish-in {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding-block: 96px 72px;
+  display: grid;
+  justify-items: center;
+  gap: clamp(22px, 4vw, 38px);
+  text-align: center;
+}
+.kicker { font-weight: 700; font-size: .78rem; letter-spacing: .26em; text-transform: uppercase; color: var(--muted); }
+.lead { margin: 0; max-width: 24ch; font: 500 clamp(1.4rem, 5vw, 2.3rem)/1.35 var(--body); text-wrap: balance; }
+.finale { margin: 0; font: 400 clamp(2.7rem, 13vw, 6.8rem)/1.02 var(--display); text-wrap: balance; }
+.finale .name { color: var(--pink); }
+.w { display: inline-block; white-space: nowrap; }
+.ch {
+  display: inline-block;
+  cursor: default;
+  transition: transform .6s cubic-bezier(.2,.9,.3,1.5), color .9s, text-shadow .9s;
+}
+.ch.on {
+  transform: translateY(-.2em) scale(1.28) rotate(var(--r));
+  color: var(--h);
+  text-shadow: 0 0 .55em var(--h);
+  transition-duration: .15s, .15s, .15s;
+}
+@media (hover: hover) {
+  .ch:hover {
+    transform: translateY(-.2em) scale(1.28) rotate(var(--r));
+    color: var(--h);
+    text-shadow: 0 0 .55em var(--h);
+    transition-duration: .15s, .15s, .15s;
+  }
+}
+.again {
+  margin-top: 8px;
+  padding: 12px 26px;
+  border-radius: 999px;
+  border: 0;
+  background: linear-gradient(90deg, var(--pink), var(--gold));
+  color: #1a0f14;
+  font-weight: 700;
+  letter-spacing: .02em;
+  cursor: pointer;
+  transition: transform .2s;
+}
+.again:hover { transform: scale(1.05); }
+.again:active { transform: scale(.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gift, .gift .b, .balloon .b, .hint .arrow { animation: none; }
+  .msg { animation-duration: 2.4s; }
+}
+</style>
+
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+<button class="sound" id="sound" type="button" aria-pressed="true">Sound on</button>
+
+<main>
+  <section class="hero" id="hero">
+    <div class="top">
+      <div class="eyebrow">A surprise for Guglu</div>
+      <h1 class="greet" id="greet" hidden><span>Happy Birthday</span><span class="nm">Guglu!</span></h1>
+    </div>
+    <button class="gift" id="gift" type="button" aria-label="Open the surprise box">
+      <span class="glow"></span>
+      <span class="base"></span>
+      <span class="lid"><span class="bow"><i></i><i></i></span></span>
+    </button>
+    <button class="hint" id="hint" type="button"><span id="hintText">Tap the box</span><span class="arrow"></span></button>
+  </section>
+
+  <section class="sky" id="sky" aria-label="Balloon sky">
+    <div class="sky-head pad">
+      <h2>Pop a balloon</h2>
+      <p>Every one is hiding a little message for you.</p>
+      <div class="count" id="count">0 popped</div>
+    </div>
+    <div class="layer" id="layer"></div>
+  </section>
+
+  <section class="wish" id="wish">
+    <div class="wish-in pad">
+      <div class="kicker">One last wish</div>
+      <p class="lead" data-hover>Wishing you a year of big laughs, small joys and cake whenever you want it.</p>
+      <h2 class="finale" data-hover>Happy Birthday <span class="name">Guglu</span> ♥</h2>
+      <button class="again" id="again" type="button">Celebrate again</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var COLORS = ["#ff5c8a", "#ffc94d", "#5ce1c0", "#6aa8ff", "#b38cff", "#ff8a4c"];
+  var CONFETTI = COLORS.concat(["#ffffff"]);
+  var rand = function (a, b) { return a + Math.random() * (b - a); };
+  var root = document.documentElement;
+
+  /* ---------- sound ---------- */
+  var soundOn = true, ac = null;
+  var soundBtn = document.getElementById("sound");
+  soundBtn.addEventListener("click", function () {
+    soundOn = !soundOn;
+    soundBtn.setAttribute("aria-pressed", String(soundOn));
+    soundBtn.textContent = soundOn ? "Sound on" : "Sound off";
+  });
+  function audio() {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === "suspended") ac.resume();
+      return ac;
+    } catch (e) { return null; }
+  }
+  function popSound() {
+    if (!soundOn) return;
+    var a = audio(); if (!a) return;
+    var n = (a.sampleRate * 0.12) | 0;
+    var buf = a.createBuffer(1, n, a.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+    var s = a.createBufferSource(); s.buffer = buf;
+    var f = a.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 1500 + Math.random() * 1500;
+    var g = a.createGain(); g.gain.value = 0.5;
+    s.connect(f); f.connect(g); g.connect(a.destination); s.start();
+  }
+  function chime() {
+    if (!soundOn) return;
+    var a = audio(); if (!a) return;
+    [523.25, 659.25, 783.99, 1046.5].forEach(function (hz, i) {
+      var o = a.createOscillator(), g = a.createGain(), t = a.currentTime + i * 0.12;
+      o.type = "triangle"; o.frequency.value = hz;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.22, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.65);
+    });
+  }
+
+  /* ---------- particles ---------- */
+  var cv = document.getElementById("fx"), cx = cv.getContext("2d");
+  var W = 0, H = 0, parts = [], raf = 0, last = 0;
+  function size() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  size();
+  window.addEventListener("resize", size);
+
+  function burst(x, y, o) {
+    o = o || {};
+    var count = Math.round((o.count || 60) * (reduce ? 0.4 : 1));
+    var a0 = (o.angle ? o.angle[0] : 0) * Math.PI / 180;
+    var a1 = (o.angle ? o.angle[1] : 360) * Math.PI / 180;
+    var sp = o.speed || [4, 10];
+    var pal = o.colors || CONFETTI;
+    for (var i = 0; i < count; i++) {
+      var ang = rand(a0, a1), v = rand(sp[0], sp[1]);
+      parts.push({
+        x: x, y: y,
+        vx: Math.cos(ang) * v, vy: Math.sin(ang) * v,
+        w: o.dots ? rand(3, 6) : rand(6, 11),
+        h: o.dots ? 0 : rand(3, 6),
+        rot: rand(0, 6.28), vr: rand(-0.3, 0.3), tilt: rand(0, 6.28),
+        c: pal[(Math.random() * pal.length) | 0],
+        g: o.gravity == null ? 0.22 : o.gravity,
+        drag: o.drag || 0.985,
+        age: 0, max: o.dots ? rand(24, 40) : rand(120, 220)
+      });
+    }
+    if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); }
+  }
+  var rainUntil = 0;
+  function rain(ms) { rainUntil = performance.now() + ms; if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } }
+
+  function tick(now) {
+    var dt = Math.min((now - last) / 16.67, 2.5); last = now;
+    if (now < rainUntil) {
+      var k = reduce ? 1 : 3;
+      for (var r = 0; r < k; r++) {
+        parts.push({ x: rand(0, W), y: -12, vx: rand(-1, 1), vy: rand(2, 5), w: rand(6, 10), h: rand(3, 6),
+          rot: rand(0, 6.28), vr: rand(-0.25, 0.25), tilt: rand(0, 6.28),
+          c: CONFETTI[(Math.random() * CONFETTI.length) | 0], g: 0.05, drag: 0.995, age: 0, max: 400 });
+      }
+    }
+    cx.clearRect(0, 0, W, H);
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      p.vx *= p.drag; p.vy = p.vy * p.drag + p.g * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.rot += p.vr * dt; p.tilt += 0.18 * dt; p.age += dt;
+      if (p.age > p.max || p.y > H + 30) { parts.splice(i, 1); continue; }
+      cx.globalAlpha = Math.min(1, (p.max - p.age) / 30);
+      cx.fillStyle = p.c;
+      if (p.h === 0) {
+        cx.beginPath(); cx.arc(p.x, p.y, p.w, 0, 6.283); cx.fill();
+      } else {
+        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot); cx.scale(1, Math.cos(p.tilt));
+        cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cx.restore();
+      }
+    }
+    cx.globalAlpha = 1;
+    if (parts.length || now < rainUntil) raf = requestAnimationFrame(tick); else { raf = 0; cx.clearRect(0, 0, W, H); }
+  }
+
+  function party() {
+    burst(W / 2, H * 0.85, { count: 120, angle: [-125, -55], speed: [10, 20] });
+    setTimeout(function () { burst(0, H * 0.9, { count: 90, angle: [-80, -40], speed: [11, 21] }); }, 180);
+    setTimeout(function () { burst(W, H * 0.9, { count: 90, angle: [-140, -100], speed: [11, 21] }); }, 180);
+    rain(2200);
+  }
+
+  /* ---------- surprise box ---------- */
+  var gift = document.getElementById("gift");
+  var hero = document.getElementById("hero");
+  var greet = document.getElementById("greet");
+  var hint = document.getElementById("hint");
+  var hintText = document.getElementById("hintText");
+  var sky = document.getElementById("sky");
+  var opened = false;
+  root.classList.add("locked");
+
+  function scrollToSky() { sky.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); }
+
+  gift.addEventListener("click", function () {
+    if (opened) return;
+    opened = true;
+    gift.disabled = true;
+    gift.classList.add("shake");
+    chime();
+    setTimeout(function () {
+      gift.classList.remove("shake");
+      gift.classList.add("open");
+      var r = gift.getBoundingClientRect();
+      burst(r.left + r.width / 2, r.top + 30, { count: 170, angle: [-165, -15], speed: [9, 19] });
+      burst(r.left + r.width / 2, r.top + 30, { count: 70, angle: [0, 360], speed: [3, 8], gravity: 0.12 });
+      setTimeout(function () { burst(0, H * 0.9, { count: 80, angle: [-80, -40], speed: [11, 21] }); }, 250);
+      setTimeout(function () { burst(W, H * 0.9, { count: 80, angle: [-140, -100], speed: [11, 21] }); }, 250);
+      rain(2600);
+      greet.hidden = false;
+      hero.classList.add("opened");
+      hintText.textContent = "Scroll down";
+      root.classList.remove("locked");
+      setTimeout(function () { if (window.scrollY < 40) scrollToSky(); }, 3800);
+    }, 480);
+  });
+  hint.addEventListener("click", function () { if (opened) scrollToSky(); });
+
+  /* ---------- balloons ---------- */
+  var layer = document.getElementById("layer");
+  var countEl = document.getElementById("count");
+  var MESSAGES = [
+    "You're the best part of this party",
+    "Cake is calling your name",
+    "Another year, still adorable",
+    "Make a wish. Make it a big one",
+    "Today the world owes you snacks",
+    "You glow brighter than the candles",
+    "Eat the cake, skip the rules",
+    "Sending you a very big hug",
+    "New year unlocked. New magic too",
+    "You make ordinary days feel special",
+    "Your laugh is the best sound ever",
+    "Cheers to you, birthday star",
+    "Pop pop hooray!",
+    "Wishing you a year of tiny joys",
+    "You deserve every sweet thing today",
+    "Hope today feels as good as you are",
+    "Keep popping, there is more love inside"
+  ];
+  var bag = [];
+  function nextMsg() {
+    if (!bag.length) { bag = MESSAGES.slice(); for (var i = bag.length - 1; i > 0; i--) { var j = (Math.random() * (i + 1)) | 0; var t = bag[i]; bag[i] = bag[j]; bag[j] = t; } }
+    return bag.pop();
+  }
+  var alive = 0, popped = 0, timer = 0;
+
+  function spawn(seeded) {
+    var sw = sky.clientWidth, sh = sky.clientHeight;
+    var cap = Math.max(8, Math.min(18, Math.floor(sw / 70)));
+    if (alive >= cap) return;
+    var w = Math.round(rand(68, 104));
+    var h = w * 1.22;
+    var d = rand(8, 13);
+    var el = document.createElement("button");
+    el.type = "button";
+    el.className = "balloon";
+    el.setAttribute("aria-label", "Pop this balloon");
+    el.style.setProperty("--w", w + "px");
+    el.style.setProperty("--c", COLORS[(Math.random() * COLORS.length) | 0]);
+    el.style.setProperty("--rise", Math.round(sh + h + 90) + "px");
+    el.style.setProperty("--d", d.toFixed(2) + "s");
+    el.style.setProperty("--s", rand(2.2, 3.6).toFixed(2) + "s");
+    el.style.left = Math.round(rand(6, Math.max(7, sw - w - 6))) + "px";
+    if (seeded) el.style.animationDelay = (-rand(0.1, 0.8) * d).toFixed(2) + "s";
+    el.innerHTML = '<span class="b"></span>';
+    el.addEventListener("animationend", function (e) { if (e.target === el) { el.remove(); alive--; } });
+    el.addEventListener("click", function () { pop(el, w, h); });
+    layer.appendChild(el);
+    alive++;
+  }
+
+  function pop(el, w, h) {
+    if (el.dataset.popped) return;
+    el.dataset.popped = "1";
+    var c = el.style.getPropertyValue("--c");
+    var r = el.getBoundingClientRect();
+    var sr = sky.getBoundingClientRect();
+    var cxp = r.left + r.width / 2, cyp = r.top + r.height * 0.42;
+    el.remove(); alive--;
+    popSound();
+    burst(cxp, cyp, { count: 26, dots: true, speed: [3, 9], gravity: 0.1, drag: 0.93, colors: [c, "#ffffff"] });
+    var ring = document.createElement("span");
+    ring.className = "ring"; ring.style.setProperty("--c", c);
+    ring.style.left = (cxp - sr.left) + "px"; ring.style.top = (cyp - sr.top) + "px";
+    ring.addEventListener("animationend", function () { ring.remove(); });
+    sky.appendChild(ring);
+
+    var m = document.createElement("div");
+    m.className = "msg"; m.textContent = nextMsg(); m.style.setProperty("--c", c);
+    var mx = Math.max(125, Math.min(sky.clientWidth - 125, cxp - sr.left));
+    var my = Math.max(150, Math.min(sky.clientHeight - 60, cyp - sr.top));
+    m.style.left = mx + "px"; m.style.top = my + "px";
+    m.addEventListener("animationend", function () { m.remove(); });
+    sky.appendChild(m);
+
+    popped++;
+    countEl.textContent = popped + " popped";
+    if (popped % 10 === 0) burst(cxp, cyp, { count: 100, angle: [0, 360], speed: [5, 13], gravity: 0.2 });
+  }
+
+  function startSky() {
+    if (timer) return;
+    if (alive < 5) for (var i = 0; i < 7; i++) spawn(true);
+    timer = setInterval(function () { spawn(false); }, 700);
+  }
+  function stopSky() { clearInterval(timer); timer = 0; }
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (es) { es[0].isIntersecting ? startSky() : stopSky(); }, { threshold: 0.15 }).observe(sky);
+  } else { startSky(); }
+
+  /* ---------- hover letters ---------- */
+  var HUES = ["#ff5c8a", "#ffc94d", "#5ce1c0", "#6aa8ff", "#b38cff", "#ff8a4c"];
+  function split(rootEl) {
+    rootEl.setAttribute("aria-label", rootEl.textContent.replace(/\s+/g, " ").trim());
+    var i = 0;
+    (function walk(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+        if (n.nodeType === 3) {
+          var frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach(function (tok) {
+            if (!tok) return;
+            if (/^\s+$/.test(tok)) { frag.appendChild(document.createTextNode(" ")); return; }
+            var w = document.createElement("span");
+            w.className = "w"; w.setAttribute("aria-hidden", "true");
+            Array.from(tok).forEach(function (chr) {
+              var s = document.createElement("span");
+              s.className = "ch"; s.textContent = chr;
+              s.style.setProperty("--h", HUES[i++ % HUES.length]);
+              s.style.setProperty("--r", (Math.random() * 24 - 12).toFixed(1) + "deg");
+              w.appendChild(s);
+            });
+            frag.appendChild(w);
+          });
+          n.replaceWith(frag);
+        } else if (n.nodeType === 1) { walk(n); }
+      });
+    })(rootEl);
+  }
+  document.querySelectorAll("[data-hover]").forEach(split);
+
+  function lift(el) {
+    if (!el || !el.classList || !el.classList.contains("ch")) return;
+    el.classList.add("on");
+    setTimeout(function () { el.classList.remove("on"); }, 700);
+  }
+  var wish = document.getElementById("wish");
+  wish.addEventListener("pointerdown", function (e) { lift(e.target); });
+  wish.addEventListener("touchmove", function (e) {
+    var t = e.touches[0];
+    lift(document.elementFromPoint(t.clientX, t.clientY));
+  }, { passive: true });
+
+  document.getElementById("again").addEventListener("click", function () { popSound(); party(); });
+})();
+</script>
+</body>
+</html>
